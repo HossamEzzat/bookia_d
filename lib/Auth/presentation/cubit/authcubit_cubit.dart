@@ -11,10 +11,25 @@ class AuthCubit extends Cubit<AuthStates> {
   AuthCubit({required this.loginUseCase, required this.registerUseCase})
       : super(AuthInitialState());
 
+  void checkAuthStatus() async {
+    emit(AuthLoadingState());
+    try {
+      final user = await loginUseCase.repository.getCachedUser();
+      if (user != null) {
+        emit(AuthSuccessState(user, "Welcome back! 🚀"));
+      } else {
+        emit(AuthInitialState());
+      }
+    } catch (_) {
+      emit(AuthInitialState());
+    }
+  }
+
   void login({required String email, required String password}) async {
     emit(AuthLoadingState());
     try {
       final user = await loginUseCase.execute(email: email, password: password);
+      await loginUseCase.repository.cacheUser(user);
       emit(AuthSuccessState(user, "Welcome Back! 🚀"));
     } catch (e) {
       emit(AuthErrorState(e.toString().replaceAll('Exception:', '')));
@@ -29,9 +44,16 @@ class AuthCubit extends Cubit<AuthStates> {
           email: email,
           password: password,
           passwordConfirmation: passwordConfirmation);
+      await loginUseCase.repository.cacheUser(user);
       emit(AuthSuccessState(user, "Account Created Successfully! 🎉"));
     } catch (e) {
       emit(AuthErrorState(e.toString().replaceAll('Exception:', '')));
     }
+  }
+
+  void logout() async {
+    emit(AuthLoadingState());
+    await loginUseCase.repository.clearCache();
+    emit(AuthInitialState());
   }
 }

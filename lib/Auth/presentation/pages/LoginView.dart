@@ -160,17 +160,8 @@ class _LoginViewState extends State<LoginView> {
                           backgroundColor: Colors.green,
                         ),
                       );
-                      // Navigate to Success screen
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SuccessHomeView(
-                            userName: state.user.name,
-                            token: state.user.token,
-                          ),
-                        ),
-                        (route) => false,
-                      );
+                      // Pop back to the root AuthWrapper which will automatically show SuccessHomeView
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                     if (state is AuthErrorState) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -363,12 +354,7 @@ class SuccessHomeView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: Color(0xFF1E232C)),
             onPressed: () {
-              // Go back to login screen
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginView()),
-                (route) => false,
-              );
+              context.read<AuthCubit>().logout();
             },
           ),
         ],

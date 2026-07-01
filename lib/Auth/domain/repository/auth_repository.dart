@@ -10,4 +10,10 @@ abstract class AuthRepository {
     required String passwordConfirmation,
   });
 
+  Future<UserEntity?> getCachedUser();
+
+  Future<void> cacheUser(UserEntity user);
+
+  Future<void> clearCache();
+
 }

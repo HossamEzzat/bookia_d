@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../widgets/bookia_logo.dart';
-import 'WelcomeView.dart';
+import 'AuthWrapper.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -17,7 +17,7 @@ class _SplashViewState extends State<SplashView> {
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const WelcomeView()),
+          MaterialPageRoute(builder: (context) => const AuthWrapper()),
         );
       }
     });

@@ -1,15 +1,18 @@
 import '../../domain/entites/user_entity.dart';
 
 import '../../domain/repository/auth_repository.dart';
+import '../data_sources/auth_local_data_source.dart';
 import '../data_sources/auth_remote_data_source.dart';
 import '../model/login_request_model.dart';
 import '../model/register_request_model.dart';
+import '../model/user_model.dart';
 
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
+  final AuthLocalDataSource localDataSource;
 
-  AuthRepositoryImpl(this.remoteDataSource);
+  AuthRepositoryImpl(this.remoteDataSource, this.localDataSource);
 
   @override
   Future<UserEntity> login(
@@ -27,5 +30,26 @@ class AuthRepositoryImpl implements AuthRepository {
       password: password,
       passwordConfirmation: passwordConfirmation,
     ));
+  }
+
+  @override
+  Future<UserEntity?> getCachedUser() async {
+    return await localDataSource.getCachedUser();
+  }
+
+  @override
+  Future<void> cacheUser(UserEntity user) async {
+    if (user is UserModel) {
+      await localDataSource.cacheUser(user);
+    } else {
+      await localDataSource.cacheUser(
+        UserModel(id: 0, name: user.name, token: user.token),
+      );
+    }
+  }
+
+  @override
+  Future<void> clearCache() async {
+    await localDataSource.clearCache();
   }
 }

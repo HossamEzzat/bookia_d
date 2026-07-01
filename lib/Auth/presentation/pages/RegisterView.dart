@@ -183,17 +183,8 @@ class _RegisterViewState extends State<RegisterView> {
                           backgroundColor: Colors.green,
                         ),
                       );
-                      // Navigate to Success home screen
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SuccessHomeView(
-                            userName: state.user.name,
-                            token: state.user.token,
-                          ),
-                        ),
-                        (route) => false,
-                      );
+                      // Pop back to the root AuthWrapper which will automatically show SuccessHomeView
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                     if (state is AuthErrorState) {
                       ScaffoldMessenger.of(context).showSnackBar(
