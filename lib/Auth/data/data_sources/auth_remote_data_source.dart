@@ -11,11 +11,42 @@ class AuthRemoteDataSource {
     receiveTimeout: const Duration(seconds: 5),
   ));
 
+  Future<UserModel> getUserProfile(String token) async {
+    try {
+      final response = await _dio.get(
+        'user',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      final data = response.data as Map<String, dynamic>;
+      return UserModel(
+        id: data['id'] ?? 0,
+        name: data['name'] ?? '',
+        token: token,
+      );
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
   Future<UserModel> login(LoginRequestModel request) async {
     try {
       FormData formData = FormData.fromMap(request.toMap());
       final response = await _dio.post('auth/login', data: formData, options: Options(headers: {'Accept': 'application/json'}));
-      return UserModel.fromJson(response.data);
+      
+      final resMap = response.data as Map<String, dynamic>;
+      final dataBlock = resMap['data'] as Map<String, dynamic>? ?? {};
+      final token = dataBlock['token'] as String? ?? '';
+      
+      if (token.isEmpty) {
+        throw Exception('لم يتم استلام رمز المصادقة من الخادم.');
+      }
+      
+      return await getUserProfile(token);
     } on DioException catch (e) { throw _handleDioError(e); }
   }
 
@@ -23,7 +54,16 @@ class AuthRemoteDataSource {
     try {
       FormData formData = FormData.fromMap(request.toMap());
       final response = await _dio.post('auth/register', data: formData, options: Options(headers: {'Accept': 'application/json'}));
-      return UserModel.fromJson(response.data);
+      
+      final resMap = response.data as Map<String, dynamic>;
+      final dataBlock = resMap['data'] as Map<String, dynamic>? ?? {};
+      final token = dataBlock['token'] as String? ?? '';
+      
+      if (token.isEmpty) {
+        throw Exception('لم يتم استلام رمز المصادقة من الخادم.');
+      }
+      
+      return await getUserProfile(token);
     } on DioException catch (e) { throw _handleDioError(e); }
   }
 
@@ -31,6 +71,6 @@ class AuthRemoteDataSource {
     if (e.response != null) {
       return Exception(e.response?.data['message'] ?? 'حدث خطأ ما، تأكد من البيانات!');
     }
-    return Exception('مشكلة في الشبكة، تأكد من اتصالك بالإنترنت يا بطل.');
+    return Exception('مشكلة في الشبكة، تأكد من اتصالك بالإنترنت.');
   }
 }
