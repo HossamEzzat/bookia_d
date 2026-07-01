@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/authcubit_cubit.dart';
@@ -287,9 +286,9 @@ class _LoginViewState extends State<LoginView> {
                       );
                     },
                     icon: const Icon(
-                      CupertinoIcons.logo_apple,
+                      Icons.apple,
                       color: Colors.black,
-                      size: 20,
+                      size: 24,
                     ),
                     label: const Text(
                       'Sign in with Apple',
