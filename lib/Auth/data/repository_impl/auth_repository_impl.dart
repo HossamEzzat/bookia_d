@@ -40,10 +40,6 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> cacheUser(UserEntity user) async {
     if (user is UserModel) {
       await localDataSource.cacheUser(user);
-    } else {
-      await localDataSource.cacheUser(
-        UserModel(id: 0, name: user.name, token: user.token),
-      );
     }
   }
 
