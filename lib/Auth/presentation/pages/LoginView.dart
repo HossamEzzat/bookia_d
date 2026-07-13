@@ -306,7 +306,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(
+                        Navigator.of(context).pushReplacement(
                           MaterialPageRoute(builder: (context) => const RegisterView()),
                         );
                       },

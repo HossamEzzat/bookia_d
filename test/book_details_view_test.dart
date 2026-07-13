@@ -51,7 +51,10 @@ void main() {
         books: [testBook],
         filteredBooks: [testBook],
         bookmarkedBookIds: [],
+        wishlistIds: {},
         cartBookIds: [],
+        cartIds: {},
+        cartBookQuantities: {},
         searchQuery: '',
       ),
     );
@@ -97,7 +100,10 @@ void main() {
         books: [testBook],
         filteredBooks: [testBook],
         bookmarkedBookIds: [42],
+        wishlistIds: {},
         cartBookIds: [],
+        cartIds: {},
+        cartBookQuantities: {},
         searchQuery: '',
       ),
     );
@@ -135,7 +141,10 @@ void main() {
         books: [testBook],
         filteredBooks: [testBook],
         bookmarkedBookIds: [],
+        wishlistIds: {},
         cartBookIds: [42],
+        cartIds: {},
+        cartBookQuantities: {},
         searchQuery: '',
       ),
     );

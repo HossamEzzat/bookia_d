@@ -35,7 +35,7 @@ class _MainDashboardViewState extends State<MainDashboardView> {
     final List<Widget> pages = [
       const HomeView(),
       const BookmarksTab(),
-      const CartTab(),
+      CartTab(userName: widget.userName),
       ProfileTab(userName: widget.userName, token: widget.token),
     ];
 
@@ -204,7 +204,169 @@ class BookmarksTab extends StatelessWidget {
 
 // Cart Tab Content
 class CartTab extends StatelessWidget {
-  const CartTab({super.key});
+  final String userName;
+  const CartTab({super.key, required this.userName});
+
+  void _showCheckoutBottomSheet(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController(text: userName);
+    final phoneController = TextEditingController();
+    final emailController = TextEditingController();
+    final addressController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom + 20,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Checkout Delivery Details 📦',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Georgia',
+                      color: Color(0xFF1E232C),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Recipient Name',
+                      labelStyle: TextStyle(color: Color(0xFF8391A1)),
+                    ),
+                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Recipient Phone',
+                      labelStyle: TextStyle(color: Color(0xFF8391A1)),
+                    ),
+                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Recipient Email',
+                      labelStyle: TextStyle(color: Color(0xFF8391A1)),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'Required';
+                      if (!v.contains('@')) return 'Invalid email';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: addressController,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Delivery Address',
+                      labelStyle: TextStyle(color: Color(0xFF8391A1)),
+                    ),
+                    validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFC3A15C),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () async {
+                        if (formKey.currentState!.validate()) {
+                          Navigator.of(bottomSheetContext).pop();
+                          
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Placing order... ⏳')),
+                          );
+                          
+                          try {
+                            final orderDetails = await context.read<HomeCubit>().placeOrder(
+                              name: nameController.text.trim(),
+                              phone: phoneController.text.trim(),
+                              email: emailController.text.trim(),
+                              address: addressController.text.trim(),
+                            );
+                            
+                            if (context.mounted) {
+                              showDialog(
+                                context: context,
+                                builder: (dialogCtx) => AlertDialog(
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  title: const Text('Order Placed Successfully! 🎉', style: TextStyle(fontFamily: 'Georgia')),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Order Number: ${orderDetails['order_number']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 8),
+                                      Text('Total Price: ${orderDetails['total_price']} \$'),
+                                      const SizedBox(height: 8),
+                                      const Text('Thank you for shopping with Bookia. Your order is on its way! 🚀'),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(dialogCtx).pop(),
+                                      child: const Text('Ok', style: TextStyle(color: Color(0xFFC3A15C))),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to place order: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      },
+                      child: const Text(
+                        'Place Order',
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -251,7 +413,9 @@ class CartTab extends StatelessWidget {
             double total = 0.0;
             for (var book in cartBooks) {
               final numericString = book.price.replaceAll(RegExp(r'[^0-9.]'), '');
-              total += double.tryParse(numericString) ?? 0.0;
+              final price = double.tryParse(numericString) ?? 0.0;
+              final qty = state.cartBookQuantities[book.id] ?? 1;
+              total += price * qty;
             }
 
             // Format total nicely
@@ -266,6 +430,7 @@ class CartTab extends StatelessWidget {
                     itemCount: cartBooks.length,
                     itemBuilder: (context, index) {
                       final book = cartBooks[index];
+                      final qty = state.cartBookQuantities[book.id] ?? 1;
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         color: Colors.white,
@@ -291,9 +456,30 @@ class CartTab extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Georgia', fontSize: 16),
                           ),
-                          subtitle: Text(
-                            book.price,
-                            style: const TextStyle(color: Color(0xFFC3A15C), fontWeight: FontWeight.bold, fontSize: 14),
+                          subtitle: Row(
+                            children: [
+                              Text(
+                                book.price,
+                                style: const TextStyle(color: Color(0xFFC3A15C), fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline, color: Color(0xFF8391A1), size: 20),
+                                onPressed: () {
+                                  context.read<HomeCubit>().updateCartQuantity(book.id, qty - 1);
+                                },
+                              ),
+                              Text(
+                                '$qty',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E232C)),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add_circle_outline, color: Color(0xFF8391A1), size: 20),
+                                onPressed: () {
+                                  context.read<HomeCubit>().updateCartQuantity(book.id, qty + 1);
+                                },
+                              ),
+                            ],
                           ),
                           trailing: IconButton(
                             icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
@@ -323,7 +509,7 @@ class CartTab extends StatelessWidget {
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, -4),
                       ),
@@ -355,13 +541,7 @@ class CartTab extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Proceeding to Checkout... 🚀'),
-                              ),
-                            );
-                          },
+                          onPressed: () => _showCheckoutBottomSheet(context),
                           child: const Text(
                             'Checkout',
                             style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),

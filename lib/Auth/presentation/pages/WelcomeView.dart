@@ -20,7 +20,7 @@ class WelcomeView extends StatelessWidget {
           ),
           // Dark/Light tint overlay to improve text readability
           Container(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
           ),
           // Content
           SafeArea(
@@ -33,11 +33,11 @@ class WelcomeView extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),

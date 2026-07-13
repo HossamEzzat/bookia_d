@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
           registerUseCase: RegisterUseCase(repository),
         );
       },
-      child: const MaterialApp(
+      child:  MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Bookia',
         home: SplashView(),

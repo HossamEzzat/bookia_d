@@ -6,7 +6,6 @@ import 'WelcomeView.dart';
 
 import '../../../Home/data/data_sources/home_remote_data_source.dart';
 import '../../../Home/data/repository_impl/home_repository_impl.dart';
-import '../../../Home/domain/use_cases/get_books_use_case.dart';
 import '../../../Home/presentation/cubit/home_cubit.dart';
 import '../../../Home/presentation/pages/MainDashboardView.dart';
 
@@ -31,10 +30,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
         if (state is AuthSuccessState) {
           return BlocProvider(
             create: (context) {
-              final remoteDataSource = HomeRemoteDataSource();
+              final remoteDataSource = HomeRemoteDataSource(token: state.user.token);
               final repository = HomeRepositoryImpl(remoteDataSource);
               return HomeCubit(
-                getBooksUseCase: GetBooksUseCase(repository),
+                repository: repository,
               );
             },
             child: MainDashboardView(

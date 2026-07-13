@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/use_cases/login_use_case.dart';
 import '../../domain/use_cases/register_use_case.dart';
@@ -54,6 +55,12 @@ class AuthCubit extends Cubit<AuthStates> {
   void logout() async {
     emit(AuthLoadingState());
     await loginUseCase.repository.clearCache();
+    
+    // Clear home feature preferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('bookmarked_book_ids');
+    await prefs.remove('cart_book_ids');
+    
     emit(AuthInitialState());
   }
 }
